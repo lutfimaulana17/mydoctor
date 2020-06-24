@@ -3,29 +3,15 @@ import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { DummyUser, ILNullPhoto } from '../../../assets'
 import { fonts, colors, getData } from '../../../utils'
 
-const HomeProfile = ({onPress}) => {
-    const [profile, setProfile] = useState({
-        photo: ILNullPhoto,
-        fullName: '',
-        profession: ''
-    })
-
-    useEffect(() => {
-        getData('user').then(res => {
-            const data = res;
-            data.photo = {uri: res.photo}
-            setProfile(data)
-        })
-     }, [])
-
+const HomeProfile = ({onPress, profile}) => {
     return (
         <TouchableOpacity style={styles.container} onPress={onPress}>
-            <Image source={profile.photo} style={styles.avatar} />
-            <View>
-                <Text style={styles.name}>{profile.fullName}</Text>
-                <Text style={styles.profession}>{profile.profession}</Text>
-            </View>
-        </TouchableOpacity>
+        <Image source={profile.photo} style={styles.avatar} />
+        <View>
+            <Text style={styles.name}>{profile.fullName}</Text>
+            <Text style={styles.profession}>{profile.profession}</Text>
+        </View>
+    </TouchableOpacity>
     )
 }
 

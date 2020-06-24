@@ -1,36 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 import { Header, Profile, List, Gap } from '../../components'
-import { colors, getData } from '../../utils'
+import { colors, getData, showError } from '../../utils'
 import { ILNullPhoto } from '../../assets'
 import { Fire } from '../../config'
 import { showMessage } from 'react-native-flash-message'
 
-const UserProfile = ({navigation}) => {
-    const [profile, setProfile] = useState({
-        fullName: '',
-        profession: '',
-        photo: ILNullPhoto
-    })
-
-    useEffect(() => {
-        getData('user').then(res => {
-            const data = res
-            data.photo = {uri: res.photo}
-            setProfile(data)
-        })
-    }, [])
+const UserProfile = ({navigation, route}) => {
+    const profile = route.params;
 
     const signOut = () => {
         Fire.auth().signOut().then(() => {
             navigation.replace('GetStarted')
         }).catch(err => {
-            showMessage({
-                message: err.message,
-                type: 'default',
-                backgroundColor: colors.error,
-                color: colors.white
-            })
+            showError(err.message);
         })
     }
 

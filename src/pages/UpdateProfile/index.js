@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
-import { showMessage } from 'react-native-flash-message'
-import { Button, Gap, Header, Input, Profile } from '../../components'
-import { Fire } from '../../config'
-import { colors, getData, storeData } from '../../utils'
 import ImagePicker from 'react-native-image-picker'
 import { ILNullPhoto } from '../../assets'
+import { Button, Gap, Header, Input, Profile } from '../../components'
+import { Fire } from '../../config'
+import { colors, getData, showError, storeData } from '../../utils'
 
 const UpdateProfile = ({navigation}) => {
     const [profile, setProfile] = useState({
@@ -20,7 +19,9 @@ const UpdateProfile = ({navigation}) => {
     useEffect(() => {
         getData('user').then(res => {
             const data = res
-            setPhoto({uri: res.photo})
+            data.photoForDB = res.photo.length > 1 ? res.photo : ILNullPhoto
+            const tempPhoto = res.photo.length > 1 ? {uri: res.photo} : ILNullPhoto
+            setPhoto(tempPhoto)
             setProfile(data)
         })
     }, [])
@@ -28,20 +29,13 @@ const UpdateProfile = ({navigation}) => {
     const update = () => {
         if (password.length > 0) {
             if (password.length < 6) {
-                showMessage({
-                    message: 'Password kurang dari 6 karakter',
-                    type: 'default',
-                    backgroundColor: colors.error,
-                    color: colors.white
-                })
+                showError('Password kurang dari 6 karakter')
             } else {
                 updatePassword()
                 updateProfileData()
-                navigation.replace('MainApp')
             }
         } else {
             updateProfileData()
-            navigation.replace('MainApp')
         }
     }
 
@@ -49,12 +43,7 @@ const UpdateProfile = ({navigation}) => {
         Fire.auth().onAuthStateChanged((user) => {
             if (user) {
                 user.updatePassword(password).catch(err => {
-                    showMessage({
-                        message: err.message,
-                        type: 'default',
-                        backgroundColor: colors.error,
-                        color: colors.white
-                    })
+                    showError(err.message)
                 })
             }
         })
@@ -68,14 +57,15 @@ const UpdateProfile = ({navigation}) => {
             .update(data)
             .then(() => {
                 storeData('user', data)
+                    .then(() => {
+                        navigation.replace('MainApp');
+                    })
+                    .catch(() => {
+                        showError('Terjadi Masalah');
+                    })
             })
             .catch(err => {
-                showMessage({
-                    message: err.message,
-                    type: 'default',
-                    backgroundColor: colors.error,
-                    color: colors.white
-                })
+                showError(err.message)
             })
     }
 
@@ -89,12 +79,7 @@ const UpdateProfile = ({navigation}) => {
     const getImage = () => {
         ImagePicker.launchImageLibrary({quality: 0.5, maxWidth: 200, maxHeight: 200}, (response) => {
             if (response.didCancel || response.error) {
-                showMessage({
-                    message: 'oops, sepertinya anda tidak memilih foto nya?',
-                    type: 'default',
-                    backgroundColor: colors.error,
-                    color: colors.white
-                })
+                showError('oops, sepertinya anda tidak memilih foto nya?')
             } else {
                 const source = {uri: response.uri}
                 setPhoto(source)
